@@ -3,100 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movilog - Film ve Dizi Günlüğü</title>
+    <title>Movilog - Film & Dizi Dünyası</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <h1 id="logo" class="logo">🎬 Movilog</h1>
+    <header>
+        <h1 id="logo" style="cursor: pointer;">🎬 Movilog</h1>
+        <div class="nav-controls">
             <input type="text" id="search" placeholder="Film veya dizi ara...">
-            <div class="nav-buttons">
-                <button id="profile-btn" class="nav-btn hidden">👤 Profilim</button>
-                <button id="auth-nav-btn" class="nav-btn">🔐 Giriş Yap</button>
-                <button id="logout-btn" class="nav-btn hidden">🚪 Çıkış</button>
+            <button id="profile-btn" class="hidden">Profilim</button>
+            <button id="logout-btn" class="hidden">Çıkış Yap</button>
+            <button id="auth-nav-btn">Giriş Yap / Kayıt Ol</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="movies-container"></div>
+
+        <div id="auth-view" class="hidden">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button id="tab-login" class="auth-tab active">Giriş Yap</button>
+                    <button id="tab-register" class="auth-tab">Kayıt Ol</button>
+                </div>
+                
+                <form id="login-form" class="auth-form">
+                    <input type="text" id="login-username" placeholder="Kullanıcı Adı" required>
+                    <input type="password" id="login-password" placeholder="Şifre" required>
+                    <button type="submit">Giriş Yap</button>
+                </form>
+
+                <form id="register-form" class="auth-form hidden">
+                    <input type="text" id="register-username" placeholder="Kullanıcı Adı" required>
+                    <input type="password" id="register-password" placeholder="Şifre" required>
+                    <button type="submit">Kayıt Ol</button>
+                </form>
+                <p id="auth-message" style="text-align: center; margin-top: 15px; color: #ec4899; font-size: 14px;"></p>
             </div>
         </div>
-    </nav>
 
-    <main class="container">
-        <div id="movies-container" class="movies-grid"></div>
-
-        <div id="details-view" class="view-panel hidden">
-            <button id="back-btn" class="back-btn">⬅️ Geri Dön</button>
-            <div class="detail-content">
-                <img id="detail-poster" src="" alt="">
-                <div class="detail-info">
+        <div id="details-view" class="hidden">
+            <button id="back-btn">← Ana Sayfaya Dön</button>
+            <div class="content-split">
+                <div class="poster-side">
+                    <img id="detail-poster" src="" alt="">
+                </div>
+                <div class="info-side">
                     <h2 id="detail-title"></h2>
                     <p id="detail-movilog-rating"></p>
+                    <button id="favorite-btn" class="hidden">🤍 Favorilere Ekle</button>
                     <p id="detail-overview"></p>
                     
                     <div id="tv-spec-area" class="hidden">
-                        <select id="season-select"></select>
-                        <select id="episode-select" disabled></select>
+                        <hr>
+                        <h3>Sezon ve Bölüm Seçimi</h3>
+                        <div class="tv-selectors">
+                            <select id="season-select">
+                                <option value="">Sezon Seçiniz</option>
+                            </select>
+                            <select id="episode-select" disabled>
+                                <option value="">Önce Sezon Seçiniz</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <button id="favorite-btn" class="fav-btn hidden">🤍 Favorilere Ekle</button>
+                    <hr>
+                    
+                    <div id="review-area">
+                        <h3>Yorum Yap ve Puanla</h3>
+                        <form id="review-form">
+                            <select id="user-rating" required>
+                                <option value="">Puan Seçin</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                                <option value="4.5">⭐⭐⭐⭐🌗 (4.5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4)</option>
+                                <option value="3.5">⭐⭐⭐🌗 (3.5)</option>
+                                <option value="3">⭐⭐⭐ (3)</option>
+                                <option value="2.5">⭐⭐🌗 (2.5)</option>
+                                <option value="2">⭐⭐ (2)</option>
+                                <option value="1.5">⭐🌗 (1.5)</option>
+                                <option value="1">⭐ (1)</option>
+                                <option value="0.5">🌗 (0.5)</option>
+                            </select>
+                            <label style="display:block; margin: 10px 0 5px 0; color: #aaa; font-size: 14px;">İzlediğiniz Tarih:</label>
+                            <input type="date" id="watch-date" required style="width:100%; margin-bottom:10px;">
+                            <textarea id="user-comment" placeholder="Bu içerik hakkındaki düşünceleriniz..." required></textarea>
+                            <button type="submit">Gönder</button>
+                        </form>
+                    </div>
+                    <div id="review-guest-message" class="hidden">
+                        <p style="color: #a78bfa; font-size: 16px; font-weight: 500;">Yorum yapmak ve puanlamak için lütfen giriş yapın.</p>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Kullanıcı Yorumları</h3>
+                    <div id="comments-list"></div>
                 </div>
             </div>
-            <div id="review-guest-message" class="hidden">Yorum yapmak için giriş yapmalısınız.</div>
-            <div id="review-area" class="hidden">
-               <form id="review-form">
-        <select id="user-rating" required>
-            <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-            <option value="4">⭐⭐⭐⭐ (4)</option>
-            <option value="3">⭐⭐⭐ (3)</option>
-            <option value="2">⭐⭐ (2)</option>
-            <option value="1">⭐ (1)</option>
-        </select>
-        <input type="date" id="watch-date" required>
-        <textarea id="user-comment" placeholder="Düşüncelerini yaz..." required></textarea>
-        <button type="submit">Gönder</button>
-    </form>
-                
-            </div>
-            <div id="comments-list"></div>
         </div>
 
-        <div id="profile-view" class="view-panel hidden">
-            <button id="profile-back-btn" class="back-btn">⬅️ Ana Sayfa</button>
-            <h2 id="profile-title"></h2>
-            <button id="add-friend-btn" class="friend-btn hidden">Arkadaş Ekle</button>
-            
-            <div id="profile-favorites-section">
-                <h3>❤️ Favoriler</h3>
-                <div id="profile-favorites-list" class="favorites-grid"></div>
+        <div id="profile-view" class="hidden">
+            <button id="profile-back-btn">← Ana Sayfaya Dön</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="view-title" id="profile-title">Profilim</h2>
+                <button id="add-friend-btn" class="hidden">Arkadaş Ekle</button>
             </div>
             
-            <div id="profile-reviews-section">
-                <h3>✍️ İncelemeler</h3>
-                <div id="profile-reviews-list"></div>
-            </div>
-
-            <div id="profile-friends-section" class="hidden">
-                <h3>👥 Arkadaşlarım (<span id="friend-count">0</span>)</h3>
-                <div id="profile-friends-list"></div>
+            <div class="profile-layout">
+                <div class="profile-main-content">
+                    <div id="profile-favorites-section" style="margin-bottom: 40px;">
+                        <h3>Favori Dizi ve Filmler</h3>
+                        <div id="profile-favorites-list" class="favorites-grid"></div>
+                    </div>
+                    <h3>Puanlanan ve Yorumlanan İçerikler</h3>
+                    <div id="profile-reviews-list"></div>
+                </div>
+                <div class="profile-sidebar" id="profile-friends-section">
+                    <h3>Arkadaşlar (<span id="friend-count">0</span>)</h3>
+                    <div id="profile-friends-list"></div>
+                </div>
             </div>
         </div>
-
-        <div id="auth-view" class="view-panel hidden">
-    <div class="auth-tabs">
-        <button id="tab-login" class="tab-btn active">Giriş Yap</button>
-        <button id="tab-register" class="tab-btn">Kayıt Ol</button>
-    </div>
-    <p id="auth-message"></p>
-    <form id="login-form">
-        <input type="text" id="login-username" placeholder="Kullanıcı Adı" required>
-        <input type="password" id="login-password" placeholder="Şifre" required>
-        <button type="submit">Giriş Yap</button>
-    </form>
-    <form id="register-form" class="hidden">
-        <input type="text" id="register-username" placeholder="Kullanıcı Adı Seçin" required>
-        <input type="password" id="register-password" placeholder="Şifre Seçin" required>
-        <button type="submit">Kayıt Ol</button>
-    </form>
-</div>
     </main>
+
     <script src="app.js"></script>
 </body>
 </html>

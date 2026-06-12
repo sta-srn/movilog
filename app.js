@@ -54,22 +54,6 @@ function getAverageMovilogRating(id) {
     return (total / reviews.length).toFixed(1);
 }
 
-function goBackToHome() {
-    detailsView.classList.add('hidden');
-    profileView.classList.add('hidden');
-    authView.classList.add('hidden');
-    moviesContainer.classList.remove('hidden');
-    getMovies(); // 2. commit ile eklenecek
-}
-
-document.getElementById('back-btn').addEventListener('click', goBackToHome);
-document.getElementById('profile-back-btn').addEventListener('click', goBackToHome);
-document.getElementById('logo').addEventListener('click', () => {
-    searchInput.value = '';
-    goBackToHome();
-});
-
-// --- 2. Commit Kodları ---
 async function getMovies() {
     try {
         const res = await fetch(`${BASE_URL}/trending/all/week?api_key=${API_KEY}&language=tr-TR`);
@@ -100,25 +84,10 @@ function displayMovies(movies) {
             <h3>${displayName}</h3>
             <p>⭐ ${displayRating}</p>
         `;
-        movieCard.addEventListener('click', () => showDetails(item)); // 3. commit ile canlanacak
+        movieCard.addEventListener('click', () => showDetails(item));
         moviesContainer.appendChild(movieCard);
     });
 }
-
-searchInput.addEventListener('keyup', async (e) => {
-    const query = e.target.value.trim();
-    if (!query) { getMovies(); return; }
-
-    try {
-        const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR`);
-        const data = await res.json();
-        if (data && data.results) {
-            displayMovies(data.results);
-        }
-    } catch (error) {
-        console.error(error);
-    }
-});
 
 async function showDetails(item) {
     currentItem = item;
@@ -154,7 +123,7 @@ async function showDetails(item) {
     }
 
     updateDetailRating(item.id);
-    if (typeof loadComments === 'function') loadComments(item.id); // 4. commit fonksiyonu koruması
+    loadComments(item.id);
 }
 
 function updateFavoriteButtonState() {
@@ -181,8 +150,8 @@ favoriteBtn.addEventListener('click', () => {
     } else {
         favorites.push({
             id: currentItem.id,
-            title: currentItem.title,
-            name: currentItem.name,
+            title: currentItem.title || null,
+            name: currentItem.name || null,
             poster_path: currentItem.poster_path,
             media_type: currentItem.media_type || (currentItem.release_date ? 'movie' : 'tv')
         });
@@ -253,14 +222,28 @@ function updateDetailRating(id) {
     }
 }
 
-// --- 4. Commit Kodları ---
+function goBackToHome() {
+    detailsView.classList.add('hidden');
+    profileView.classList.add('hidden');
+    authView.classList.add('hidden');
+    moviesContainer.classList.remove('hidden');
+    getMovies();
+}
+
+document.getElementById('back-btn').addEventListener('click', goBackToHome);
+document.getElementById('profile-back-btn').addEventListener('click', goBackToHome);
+document.getElementById('logo').addEventListener('click', () => {
+    searchInput.value = '';
+    goBackToHome();
+});
+
 document.getElementById('review-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const rating = document.getElementById('user-rating').value;
     const comment = document.getElementById('user-comment').value;
     const watchDateInput = document.getElementById('watch-date').value;
     
-    const formattedWatchDate = new Date(watchDateInput).toLocaleDateString('tr-TR');
+    const formattedWatchDate = watchDateInput ? new Date(watchDateInput).toLocaleDateString('tr-TR') : new Date().toLocaleDateString('tr-TR');
     const reviewDate = new Date().toLocaleDateString('tr-TR');
 
     let contentSuffix = "";
@@ -345,7 +328,7 @@ function loadComments(id) {
 
         if (currentUser && rev.user === currentUser) {
             div.querySelector('.edit-review-btn').addEventListener('click', () => startInlineEdit(div.querySelector('.comment-content-wrapper'), rev, 'item', id));
-            div.querySelector('.delete-review-btn').addEventListener('click', () => deleteReview(rev.id, rev.user, rev.timestamp));
+            div.querySelector('.delete-review-btn').addEventListener('click', () => deleteReview(id, rev.user, rev.timestamp));
         }
         
         commentsList.appendChild(div);
@@ -357,10 +340,15 @@ function startInlineEdit(container, rev, type, targetId) {
         <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(255,255,255,0.02); padding: 5px; border-radius: 8px;">
             <select class="edit-rating" style="width: 100%; padding: 10px; background: #1e1b4b; color: white; border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 8px;">
                 <option value="5" ${rev.rating === '5' ? 'selected' : ''}>⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4.5" ${rev.rating === '4.5' ? 'selected' : ''}>⭐⭐⭐⭐🌗 (4.5)</option>
                 <option value="4" ${rev.rating === '4' ? 'selected' : ''}>⭐⭐⭐⭐ (4)</option>
+                <option value="3.5" ${rev.rating === '3.5' ? 'selected' : ''}>⭐⭐⭐🌗 (3.5)</option>
                 <option value="3" ${rev.rating === '3' ? 'selected' : ''}>⭐⭐⭐ (3)</option>
+                <option value="2.5" ${rev.rating === '2.5' ? 'selected' : ''}>⭐⭐🌗 (2.5)</option>
                 <option value="2" ${rev.rating === '2' ? 'selected' : ''}>⭐⭐ (2)</option>
+                <option value="1.5" ${rev.rating === '1.5' ? 'selected' : ''}>⭐🌗 (1.5)</option>
                 <option value="1" ${rev.rating === '1' ? 'selected' : ''}>⭐ (1)</option>
+                <option value="0.5" ${rev.rating === '0.5' ? 'selected' : ''}>🌗 (0.5)</option>
             </select>
             <textarea class="edit-comment" style="width: 100%; height: 80px; padding: 10px; background: #1e1b4b; color: white; border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 8px; resize: none;">${rev.comment}</textarea>
             <div style="display: flex; gap: 10px;">
@@ -501,11 +489,10 @@ addFriendBtn.addEventListener('click', () => {
     
     if (friends.includes(viewedProfileUser)) {
         friends = friends.filter(f => f !== viewedProfileUser);
-        localStorage.setItem(`friends_${currentUser}`, JSON.stringify(friends));
     } else {
         friends.push(viewedProfileUser);
-        localStorage.setItem(`friends_${currentUser}`, JSON.stringify(friends));
     }
+    localStorage.setItem(`friends_${currentUser}`, JSON.stringify(friends));
     updateFriendButtonState();
     loadFriendsList();
 });
@@ -575,6 +562,8 @@ function loadProfileReviews(username) {
 function loadFriendsList() {
     const friendsList = document.getElementById('profile-friends-list');
     const friendCount = document.getElementById('friend-count');
+    if (!friendsList || !friendCount) return;
+    
     friendsList.innerHTML = '';
     
     if (!currentUser) return;
@@ -678,6 +667,21 @@ logoutBtn.addEventListener('click', () => {
 profileBtn.addEventListener('click', () => {
     if (currentUser) {
         showUserProfile(currentUser);
+    }
+});
+
+searchInput.addEventListener('keyup', async (e) => {
+    const query = e.target.value.trim();
+    if (!query) { getMovies(); return; }
+
+    try {
+        const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR`);
+        const data = await res.json();
+        if (data && data.results) {
+            displayMovies(data.results);
+        }
+    } catch (error) {
+        console.error(error);
     }
 });
 
