@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movilog - Film ve Dizi Günlüğü</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 id="logo" class="logo">🎬 Movilog</h1>
+            <input type="text" id="search" placeholder="Film veya dizi ara...">
+            <div class="nav-buttons">
+                <button id="profile-btn" class="nav-btn hidden">👤 Profilim</button>
+                <button id="auth-nav-btn" class="nav-btn">🔐 Giriş Yap</button>
+                <button id="logout-btn" class="nav-btn hidden">🚪 Çıkış</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div id="movies-container" class="movies-grid"></div>
+
+        <div id="details-view" class="view-panel hidden">
+            <button id="back-btn" class="back-btn">⬅️ Geri Dön</button>
+            <div class="detail-content">
+                <img id="detail-poster" src="" alt="">
+                <div class="detail-info">
+                    <h2 id="detail-title"></h2>
+                    <p id="detail-movilog-rating"></p>
+                    <p id="detail-overview"></p>
+                    
+                    <div id="tv-spec-area" class="hidden">
+                        <select id="season-select"></select>
+                        <select id="episode-select" disabled></select>
+                    </div>
+
+                    <button id="favorite-btn" class="fav-btn hidden">🤍 Favorilere Ekle</button>
+                </div>
+            </div>
+            <div id="review-guest-message" class="hidden">Yorum yapmak için giriş yapmalısınız.</div>
+            <div id="review-area" class="hidden">
+                <form id="review-form"></form>
+            </div>
+            <div id="comments-list"></div>
+        </div>
+
+        <div id="profile-view" class="view-panel hidden">
+            <button id="profile-back-btn" class="back-btn">⬅️ Ana Sayfa</button>
+            <h2 id="profile-title"></h2>
+            <button id="add-friend-btn" class="friend-btn hidden">Arkadaş Ekle</button>
+            
+            <div id="profile-favorites-section">
+                <h3>❤️ Favoriler</h3>
+                <div id="profile-favorites-list" class="favorites-grid"></div>
+            </div>
+            
+            <div id="profile-reviews-section">
+                <h3>✍️ İncelemeler</h3>
+                <div id="profile-reviews-list"></div>
+            </div>
+
+            <div id="profile-friends-section" class="hidden">
+                <h3>👥 Arkadaşlarım (<span id="friend-count">0</span>)</h3>
+                <div id="profile-friends-list"></div>
+            </div>
+        </div>
+
+        <div id="auth-view" class="view-panel hidden">
+            <div class="auth-tabs">
+                <button id="tab-login" class="tab-btn active">Giriş Yap</button>
+                <button id="tab-register" class="tab-btn">Kayıt Ol</button>
+            </div>
+            <p id="auth-message"></p>
+            <form id="login-form"></form>
+            <form id="register-form" class="hidden"></form>
+        </div>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
