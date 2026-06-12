@@ -163,3 +163,49 @@ body {
     background-color: #ef4444;
     color: white;
 }
+#review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+#review-form textarea {
+    background: #0f172a;
+    color: white;
+    border: 1px solid #334155;
+    padding: 10px;
+    border-radius: 6px;
+    height: 80px;
+    resize: none;
+}
+
+#review-form button {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.comment-item {
+    background: #0f172a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #334155;
+}
+
+.comment-actions button {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 12px;
+}
+
+.comment-actions button:hover {
+    color: white;
+}

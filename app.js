@@ -252,3 +252,180 @@ function updateDetailRating(id) {
         ratingElement.innerText = "Henüz Movilog puanı verilmemiş.";
     }
 }
+
+// --- 4. Commit Kodları ---
+document.getElementById('review-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const rating = document.getElementById('user-rating').value;
+    const comment = document.getElementById('user-comment').value;
+    const watchDateInput = document.getElementById('watch-date').value;
+    
+    const formattedWatchDate = new Date(watchDateInput).toLocaleDateString('tr-TR');
+    const reviewDate = new Date().toLocaleDateString('tr-TR');
+
+    let contentSuffix = "";
+    if (!seasonSelect.disabled && seasonSelect.value) {
+        contentSuffix += ` - S${seasonSelect.value}`;
+        if (episodeSelect.value) {
+            contentSuffix += `E${episodeSelect.value}`;
+        }
+    }
+
+    const review = {
+        id: currentItem.id,
+        timestamp: Date.now(),
+        user: currentUser,
+        title: (currentItem.title || currentItem.name) + contentSuffix,
+        poster: currentItem.poster_path,
+        rating,
+        comment,
+        watchDate: formattedWatchDate,
+        reviewDate
+    };
+    
+    let itemReviews = JSON.parse(localStorage.getItem(`reviews_${currentItem.id}`)) || [];
+    itemReviews.push(review);
+    localStorage.setItem(`reviews_${currentItem.id}`, JSON.stringify(itemReviews));
+
+    let userHistory = JSON.parse(localStorage.getItem(`history_${currentUser}`)) || [];
+    userHistory.push(review);
+    localStorage.setItem(`history_${currentUser}`, JSON.stringify(userHistory));
+
+    document.getElementById('review-form').reset();
+    seasonSelect.value = "";
+    episodeSelect.innerHTML = '<option value="">Önce Sezon Seçiniz</option>';
+    episodeSelect.disabled = true;
+    
+    loadComments(currentItem.id);
+    updateDetailRating(currentItem.id);
+});
+
+function loadComments(id) {
+    const commentsList = document.getElementById('comments-list');
+    commentsList.innerHTML = '';
+    const reviews = JSON.parse(localStorage.getItem(`reviews_${id}`)) || [];
+
+    if(reviews.length === 0) {
+        commentsList.innerHTML = '<p style="color: #aaa; font-size: 14px;">Henüz yorum yapılmamış. İlk yorumu sen yap!</p>';
+        return;
+    }
+
+    reviews.forEach(rev => {
+        const div = document.createElement('div');
+        div.classList.add('comment-item');
+        
+        let actionButtonsHtml = '';
+        if (currentUser && rev.user === currentUser) {
+            actionButtonsHtml = `
+                <div class="comment-actions">
+                    <button class="edit-review-btn">Düzenle</button>
+                    <button class="delete-review-btn">Sil</button>
+                </div>
+            `;
+        }
+
+        div.innerHTML = `
+            <div class="comment-content-wrapper">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: #a78bfa;">${generateStarVisual(rev.rating)}</strong>
+                    <span class="comment-author" style="font-size: 14px; color: #ec4899; cursor: pointer; font-weight:600;">👤 ${rev.user}</span>
+                </div>
+                <p style="margin: 8px 0 4px 0; color: #cbd5e1; font-size: 14px;">${rev.comment}</p>
+                <div style="display: flex; gap: 15px; font-size: 11px; color: #64748b; margin-top: 5px;">
+                    <span>👁️ İzleme Tarihi: ${rev.watchDate}</span>
+                    <span>✍️ Yorum Tarihi: ${rev.reviewDate}</span>
+                </div>
+                ${actionButtonsHtml}
+            </div>
+        `;
+        
+        div.querySelector('.comment-author').addEventListener('click', () => {
+            showUserProfile(rev.user);
+        });
+
+        if (currentUser && rev.user === currentUser) {
+            div.querySelector('.edit-review-btn').addEventListener('click', () => startInlineEdit(div.querySelector('.comment-content-wrapper'), rev, 'item', id));
+            div.querySelector('.delete-review-btn').addEventListener('click', () => deleteReview(rev.id, rev.user, rev.timestamp));
+        }
+        
+        commentsList.appendChild(div);
+    });
+}
+
+function startInlineEdit(container, rev, type, targetId) {
+    container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(255,255,255,0.02); padding: 5px; border-radius: 8px;">
+            <select class="edit-rating" style="width: 100%; padding: 10px; background: #1e1b4b; color: white; border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 8px;">
+                <option value="5" ${rev.rating === '5' ? 'selected' : ''}>⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4" ${rev.rating === '4' ? 'selected' : ''}>⭐⭐⭐⭐ (4)</option>
+                <option value="3" ${rev.rating === '3' ? 'selected' : ''}>⭐⭐⭐ (3)</option>
+                <option value="2" ${rev.rating === '2' ? 'selected' : ''}>⭐⭐ (2)</option>
+                <option value="1" ${rev.rating === '1' ? 'selected' : ''}>⭐ (1)</option>
+            </select>
+            <textarea class="edit-comment" style="width: 100%; height: 80px; padding: 10px; background: #1e1b4b; color: white; border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 8px; resize: none;">${rev.comment}</textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="save-edit-btn" style="background: linear-gradient(90deg, #a855f7, #ec4899); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">Kaydet</button>
+                <button class="cancel-edit-btn" style="background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px; cursor: pointer;">İptal</button>
+            </div>
+        </div>
+    `;
+
+    container.querySelector('.save-edit-btn').addEventListener('click', () => {
+        const newRating = container.querySelector('.edit-rating').value;
+        const newComment = container.querySelector('.edit-comment').value.trim();
+        if (!newComment) return;
+
+        let itemReviews = JSON.parse(localStorage.getItem(`reviews_${rev.id}`)) || [];
+        itemReviews.forEach(r => {
+            if (r.timestamp === rev.timestamp) {
+                r.comment = newComment;
+                r.rating = newRating;
+            }
+        });
+        localStorage.setItem(`reviews_${rev.id}`, JSON.stringify(itemReviews));
+
+        let userHistory = JSON.parse(localStorage.getItem(`history_${rev.user}`)) || [];
+        userHistory.forEach(r => {
+            if (r.id === rev.id && r.timestamp === rev.timestamp) {
+                r.comment = newComment;
+                r.rating = newRating;
+            }
+        });
+        localStorage.setItem(`history_${rev.user}`, JSON.stringify(userHistory));
+
+        if (type === 'item') {
+            loadComments(targetId);
+            updateDetailRating(targetId);
+        } else {
+            loadProfileReviews(targetId);
+        }
+    });
+
+    container.querySelector('.cancel-edit-btn').addEventListener('click', () => {
+        if (type === 'item') {
+            loadComments(targetId);
+        } else {
+            loadProfileReviews(targetId);
+        }
+    });
+}
+
+function deleteReview(id, user, timestamp) {
+    if (!confirm("Yorumunuzu silmek istediğinize emin misiniz?")) return;
+
+    let itemReviews = JSON.parse(localStorage.getItem(`reviews_${id}`)) || [];
+    itemReviews = itemReviews.filter(r => r.timestamp !== timestamp);
+    localStorage.setItem(`reviews_${id}`, JSON.stringify(itemReviews));
+
+    let userHistory = JSON.parse(localStorage.getItem(`history_${user}`)) || [];
+    userHistory = userHistory.filter(r => r.timestamp !== timestamp);
+    localStorage.setItem(`history_${user}`, JSON.stringify(userHistory));
+
+    if (!detailsView.classList.contains('hidden') && currentItem && currentItem.id === id) {
+        loadComments(id);
+        updateDetailRating(id);
+    }
+    if (!profileView.classList.contains('hidden') && viewedProfileUser) {
+        loadProfileReviews(viewedProfileUser);
+    }
+}

@@ -41,7 +41,19 @@
             </div>
             <div id="review-guest-message" class="hidden">Yorum yapmak için giriş yapmalısınız.</div>
             <div id="review-area" class="hidden">
-                <form id="review-form"></form>
+               <form id="review-form">
+        <select id="user-rating" required>
+            <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+            <option value="4">⭐⭐⭐⭐ (4)</option>
+            <option value="3">⭐⭐⭐ (3)</option>
+            <option value="2">⭐⭐ (2)</option>
+            <option value="1">⭐ (1)</option>
+        </select>
+        <input type="date" id="watch-date" required>
+        <textarea id="user-comment" placeholder="Düşüncelerini yaz..." required></textarea>
+        <button type="submit">Gönder</button>
+    </form>
+                
             </div>
             <div id="comments-list"></div>
         </div>
