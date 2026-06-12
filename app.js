@@ -68,3 +68,54 @@ document.getElementById('logo').addEventListener('click', () => {
     searchInput.value = '';
     goBackToHome();
 });
+
+// --- 2. Commit Kodları ---
+async function getMovies() {
+    try {
+        const res = await fetch(`${BASE_URL}/trending/all/week?api_key=${API_KEY}&language=tr-TR`);
+        const data = await res.json();
+        if (data && data.results) {
+            displayMovies(data.results);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function displayMovies(movies) {
+    moviesContainer.innerHTML = '';
+    if (!movies || !Array.isArray(movies)) return;
+
+    movies.forEach(item => {
+        if (!item.poster_path) return;
+
+        const localAverage = getAverageMovilogRating(item.id);
+        const displayRating = localAverage ? `Movilog: ${localAverage}/5` : `TMDB: ${(item.vote_average / 2).toFixed(1)}/5`;
+        const displayName = item.title || item.name;
+
+        const movieCard = document.createElement('div');
+        movieCard.classList.add('movie-card');
+        movieCard.innerHTML = `
+            <img src="${IMG_URL + item.poster_path}" alt="${displayName}">
+            <h3>${displayName}</h3>
+            <p>⭐ ${displayRating}</p>
+        `;
+        movieCard.addEventListener('click', () => showDetails(item)); // 3. commit ile canlanacak
+        moviesContainer.appendChild(movieCard);
+    });
+}
+
+searchInput.addEventListener('keyup', async (e) => {
+    const query = e.target.value.trim();
+    if (!query) { getMovies(); return; }
+
+    try {
+        const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR`);
+        const data = await res.json();
+        if (data && data.results) {
+            displayMovies(data.results);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+});
