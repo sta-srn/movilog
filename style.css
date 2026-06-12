@@ -109,3 +109,57 @@ body {
     color: #94a3b8;
     font-size: 14px;
 }
+
+.detail-content {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+#detail-poster {
+    width: 300px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.detail-info h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+#detail-movilog-rating {
+    color: #a78bfa;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+#detail-overview {
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+#tv-spec-area select {
+    background: #0f172a;
+    color: white;
+    border: 1px solid #334155;
+    padding: 8px;
+    border-radius: 6px;
+    margin-right: 10px;
+    margin-bottom: 15px;
+}
+
+.fav-btn {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.fav-btn.is-favorite {
+    background-color: #ef4444;
+    color: white;
+}
