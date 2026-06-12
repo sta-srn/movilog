@@ -429,3 +429,257 @@ function deleteReview(id, user, timestamp) {
         loadProfileReviews(viewedProfileUser);
     }
 }
+
+function showUserProfile(username) {
+    viewedProfileUser = username;
+    moviesContainer.classList.add('hidden');
+    detailsView.classList.add('hidden');
+    authView.classList.add('hidden');
+    profileView.classList.remove('hidden');
+
+    if (username === currentUser) {
+        document.getElementById('profile-title').innerText = `Profilim (${currentUser})`;
+        addFriendBtn.classList.add('hidden');
+        document.getElementById('profile-friends-section').classList.remove('hidden');
+    } else {
+        document.getElementById('profile-title').innerText = `${username} adlı kullanıcının profili`;
+        document.getElementById('profile-friends-section').classList.add('hidden');
+        
+        if (currentUser) {
+            addFriendBtn.classList.remove('hidden');
+            updateFriendButtonState();
+        } else {
+            addFriendBtn.classList.add('hidden');
+        }
+    }
+    
+    loadProfileFavorites(username);
+    loadProfileReviews(username);
+    loadFriendsList();
+}
+
+function loadProfileFavorites(username) {
+    const favoritesList = document.getElementById('profile-favorites-list');
+    favoritesList.innerHTML = '';
+    let favorites = JSON.parse(localStorage.getItem(`favorites_${username}`)) || [];
+
+    if (favorites.length === 0) {
+        favoritesList.innerHTML = '<p style="color: #aaa; font-size: 14px;">Henüz favori eklenmemiş.</p>';
+        return;
+    }
+
+    favorites.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('favorite-item-card');
+        const displayName = item.title || item.name;
+        card.innerHTML = `
+            <img src="${IMG_URL + item.poster_path}" alt="${displayName}">
+            <h4>${displayName}</h4>
+        `;
+        card.addEventListener('click', () => {
+            showDetails(item);
+        });
+        favoritesList.appendChild(card);
+    });
+}
+
+function updateFriendButtonState() {
+    if (!currentUser) return;
+    let friends = JSON.parse(localStorage.getItem(`friends_${currentUser}`)) || [];
+    if (friends.includes(viewedProfileUser)) {
+        addFriendBtn.innerText = "✓ Arkadaşsınız";
+        addFriendBtn.classList.add('is-friend');
+    } else {
+        addFriendBtn.innerText = "Arkadaş Ekle";
+        addFriendBtn.classList.remove('is-friend');
+    }
+}
+
+addFriendBtn.addEventListener('click', () => {
+    if (!currentUser) return;
+    let friends = JSON.parse(localStorage.getItem(`friends_${currentUser}`)) || [];
+    
+    if (friends.includes(viewedProfileUser)) {
+        friends = friends.filter(f => f !== viewedProfileUser);
+        localStorage.setItem(`friends_${currentUser}`, JSON.stringify(friends));
+    } else {
+        friends.push(viewedProfileUser);
+        localStorage.setItem(`friends_${currentUser}`, JSON.stringify(friends));
+    }
+    updateFriendButtonState();
+    loadFriendsList();
+});
+
+function loadProfileReviews(username) {
+    const profileReviewsList = document.getElementById('profile-reviews-list');
+    profileReviewsList.innerHTML = '';
+    const history = JSON.parse(localStorage.getItem(`history_${username}`)) || [];
+
+    if(history.length === 0) {
+        profileReviewsList.innerHTML = '<p style="color: #aaa; font-size: 14px;">Henüz hiçbir içeriğe yorum yapıp puan vermedi.</p>';
+        return;
+    }
+
+    history.forEach(rev => {
+        const card = document.createElement('div');
+        card.classList.add('profile-review-card');
+        
+        let actionButtonsHtml = '';
+        if (currentUser && username === currentUser) {
+            actionButtonsHtml = `
+                <div class="comment-actions">
+                    <button class="edit-review-btn">Düzenle</button>
+                    <button class="delete-review-btn">Sil</button>
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            <img src="${IMG_URL + rev.poster}" alt="${rev.title}" style="cursor:pointer;">
+            <div style="flex: 1;" class="profile-content-wrapper">
+                <h4 class="review-item-title" style="font-size: 18px; color: #fff; margin-bottom: 5px; cursor:pointer;">${rev.title}</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 5px; font-size: 13px;">
+                    <span style="color: #a78bfa;">${generateStarVisual(rev.rating)}</span>
+                    <span style="color: #64748b;">👁️ İzleme: ${rev.watchDate}</span>
+                    <span style="color: #64748b;">✍️ Yorum: ${rev.reviewDate}</span>
+                </div>
+                <p style="color: #cbd5e1; font-size: 14px; margin-top: 5px;">"${rev.comment}"</p>
+                ${actionButtonsHtml}
+            </div>
+        `;
+
+        const targetItemFetcher = async () => {
+            try {
+                const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(rev.title.split(' - ')[0])}&language=tr-TR`);
+                const data = await res.json();
+                if (data && data.results && data.results[0]) {
+                    showDetails(data.results[0]);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        card.querySelector('img').addEventListener('click', targetItemFetcher);
+        card.querySelector('.review-item-title').addEventListener('click', targetItemFetcher);
+
+        if (currentUser && username === currentUser) {
+            card.querySelector('.edit-review-btn').addEventListener('click', () => startInlineEdit(card.querySelector('.profile-content-wrapper'), rev, 'profile', username));
+            card.querySelector('.delete-review-btn').addEventListener('click', () => deleteReview(rev.id, username, rev.timestamp));
+        }
+
+        profileReviewsList.appendChild(card);
+    });
+}
+
+function loadFriendsList() {
+    const friendsList = document.getElementById('profile-friends-list');
+    const friendCount = document.getElementById('friend-count');
+    friendsList.innerHTML = '';
+    
+    if (!currentUser) return;
+    let friends = JSON.parse(localStorage.getItem(`friends_${currentUser}`)) || [];
+    friendCount.innerText = friends.length;
+
+    if (friends.length === 0) {
+        friendsList.innerHTML = '<p style="color: #64748b; font-size: 13px;">Henüz arkadaş eklenmemiş.</p>';
+        return;
+    }
+
+    friends.forEach(friend => {
+        const item = document.createElement('div');
+        item.classList.add('friend-item');
+        item.innerText = `👤 ${friend}`;
+        item.addEventListener('click', () => {
+            showUserProfile(friend);
+        });
+        friendsList.appendChild(item);
+    });
+}
+
+authNavBtn.addEventListener('click', () => {
+    moviesContainer.classList.add('hidden');
+    detailsView.classList.add('hidden');
+    profileView.classList.add('hidden');
+    authView.classList.remove('hidden');
+    document.getElementById('auth-message').innerText = '';
+});
+
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+
+tabLogin.addEventListener('click', () => {
+    tabLogin.classList.add('active');
+    tabRegister.classList.remove('active');
+    loginForm.classList.remove('hidden');
+    registerForm.classList.add('hidden');
+    document.getElementById('auth-message').innerText = '';
+});
+
+tabRegister.addEventListener('click', () => {
+    tabRegister.classList.add('active');
+    tabLogin.classList.remove('active');
+    registerForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+    document.getElementById('auth-message').innerText = '';
+});
+
+registerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = document.getElementById('register-username').value.trim();
+    const pass = document.getElementById('register-password').value;
+    const msg = document.getElementById('auth-message');
+
+    let users = JSON.parse(localStorage.getItem('registered_users')) || {};
+
+    if (users[user]) {
+        msg.innerText = 'Bu kullanıcı adı zaten alınmış!';
+        return;
+    }
+
+    users[user] = pass;
+    localStorage.setItem('registered_users', JSON.stringify(users));
+    msg.style.color = '#10b981';
+    msg.innerText = 'Kayıt başarılı! Giriş yapabilirsiniz.';
+    registerForm.reset();
+    tabLogin.click();
+});
+
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = document.getElementById('login-username').value.trim();
+    const pass = document.getElementById('login-password').value;
+    const msg = document.getElementById('auth-message');
+
+    let users = JSON.parse(localStorage.getItem('registered_users')) || {};
+
+    if (!users[user] || users[user] !== pass) {
+        msg.style.color = '#ec4899';
+        msg.innerText = 'Hatalı kullanıcı adı veya şifre!';
+        return;
+    }
+
+    currentUser = user;
+    localStorage.setItem('current_user', currentUser);
+    updateNavbar();
+    loginForm.reset();
+    goBackToHome();
+});
+
+logoutBtn.addEventListener('click', () => {
+    currentUser = null;
+    localStorage.removeItem('current_user');
+    updateNavbar();
+    goBackToHome();
+});
+
+profileBtn.addEventListener('click', () => {
+    if (currentUser) {
+        showUserProfile(currentUser);
+    }
+});
+
+updateNavbar();
+getMovies();

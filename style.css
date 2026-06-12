@@ -209,3 +209,17 @@ body {
 .comment-actions button:hover {
     color: white;
 }
+
+.auth-tabs { display: flex; gap: 10px; margin-bottom: 20px;}
+.tab-btn { background: none; border: none; color: #64748b; cursor: pointer; padding: 10px; font-weight: bold;}
+.tab-btn.active { color: white; border-bottom: 2px solid #a855f7; }
+#login-form, #register-form { display: flex; flex-direction: column; gap: 10px; max-width: 300px; }
+#login-form input, #register-form input { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 6px; }
+#login-form button, #register-form button { background: #a855f7; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+.favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 15px; }
+.favorite-item-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 6px; cursor: pointer;}
+.profile-review-card { display: flex; gap: 15px; margin-top: 15px; background: #0f172a; padding: 15px; border-radius: 8px; }
+.profile-review-card img { width: 80px; height: 120px; object-fit: cover; border-radius: 4px; }
+.friend-item { padding: 10px; background: #0f172a; margin-top: 5px; border-radius: 6px; cursor: pointer; }
+.friend-btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;}
+.friend-btn.is-friend { background: #10b981; }

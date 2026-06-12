@@ -80,14 +80,22 @@
         </div>
 
         <div id="auth-view" class="view-panel hidden">
-            <div class="auth-tabs">
-                <button id="tab-login" class="tab-btn active">Giriş Yap</button>
-                <button id="tab-register" class="tab-btn">Kayıt Ol</button>
-            </div>
-            <p id="auth-message"></p>
-            <form id="login-form"></form>
-            <form id="register-form" class="hidden"></form>
-        </div>
+    <div class="auth-tabs">
+        <button id="tab-login" class="tab-btn active">Giriş Yap</button>
+        <button id="tab-register" class="tab-btn">Kayıt Ol</button>
+    </div>
+    <p id="auth-message"></p>
+    <form id="login-form">
+        <input type="text" id="login-username" placeholder="Kullanıcı Adı" required>
+        <input type="password" id="login-password" placeholder="Şifre" required>
+        <button type="submit">Giriş Yap</button>
+    </form>
+    <form id="register-form" class="hidden">
+        <input type="text" id="register-username" placeholder="Kullanıcı Adı Seçin" required>
+        <input type="password" id="register-password" placeholder="Şifre Seçin" required>
+        <button type="submit">Kayıt Ol</button>
+    </form>
+</div>
     </main>
     <script src="app.js"></script>
 </body>
